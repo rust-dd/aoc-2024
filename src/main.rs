@@ -1,6 +1,7 @@
 mod aoc_2024_01;
+mod aoc_2024_02;
 
 fn main() {
-    // 2024.12.01
-    aoc_2024_01::solution();
+    // aoc_2024_01::solution();
+    aoc_2024_02::solution();
 }
