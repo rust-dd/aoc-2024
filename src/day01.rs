@@ -4,7 +4,7 @@ use std::str::FromStr;
 pub fn solution() {
     // A.
     let aoc_2024_a =
-        fs::read_to_string("./src/aoc_2024_a.txt").expect("Something went wrong reading the file");
+        fs::read_to_string("./inputs/day01.txt").expect("Something went wrong reading the file");
     let mut a = Vec::new();
     let mut b = Vec::new();
 

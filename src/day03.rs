@@ -4,7 +4,7 @@ use regex::Regex;
 
 pub fn solution() {
     let aoc_2024_03 =
-        fs::read_to_string("./src/aoc_2024_03.txt").expect("Something went wrong reading the file");
+        fs::read_to_string("./inputs/day03.txt").expect("Something went wrong reading the file");
 
     // A.
     let matching_regex = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();

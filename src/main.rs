@@ -1,9 +1,9 @@
-mod aoc_2024_01;
-mod aoc_2024_02;
-mod aoc_2024_03;
+mod day01;
+mod day02;
+mod day03;
 
 fn main() {
-    // aoc_2024_01::solution();
-    // aoc_2024_02::solution();
-    aoc_2024_03::solution();
+    // day01::solution();
+    // day02::solution();
+    day03::solution();
 }

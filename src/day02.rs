@@ -2,7 +2,7 @@ use std::fs;
 
 pub fn solution() {
     let aoc_2024_a =
-        fs::read_to_string("./src/aoc_2024_02.txt").expect("Something went wrong reading the file");
+        fs::read_to_string("./inputs/day02.txt").expect("Something went wrong reading the file");
 
     // A.
     let mut safe_reports_a = 0;
