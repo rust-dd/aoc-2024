@@ -3,12 +3,12 @@ use std::str::FromStr;
 
 pub fn solution() {
     // A.
-    let aoc_2024_a =
+    let aoc_2024_01 =
         fs::read_to_string("./inputs/day01.txt").expect("Something went wrong reading the file");
     let mut a = Vec::new();
     let mut b = Vec::new();
 
-    for line in aoc_2024_a.lines() {
+    for line in aoc_2024_01.lines() {
         // split by tab
         let mut parts = line.split_whitespace();
         a.push(<i32>::from_str(parts.next().unwrap()).unwrap());

@@ -1,13 +1,13 @@
 use std::fs;
 
 pub fn solution() {
-    let aoc_2024_a =
+    let aoc_2024_02 =
         fs::read_to_string("./inputs/day02.txt").expect("Something went wrong reading the file");
 
     // A.
     let mut safe_reports_a = 0;
     let mut safe_reports = Vec::<usize>::new();
-    for (idx, line) in aoc_2024_a.lines().enumerate() {
+    for (idx, line) in aoc_2024_02.lines().enumerate() {
         let numbers = line
             .split_whitespace()
             .map(|u| u.parse::<i8>().unwrap())
@@ -45,7 +45,7 @@ pub fn solution() {
             })
     };
 
-    let levels = aoc_2024_a
+    let levels = aoc_2024_02
         .lines()
         .map(|line| {
             line.split_whitespace()
