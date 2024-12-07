@@ -5,4 +5,5 @@ edition = "2021"
 
 [dependencies]
 ndarray = "0.16.1"
+petgraph = "0.6.5"
 regex = "1.11.1"
