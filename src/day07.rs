@@ -66,13 +66,12 @@ pub fn solution() {
         // || use for concatenation and get the result of the left side
         // e.g 156: 15 6
         // 156 = 15 || 6
-        for i in 0..3i64.pow((len - 1) as u32) {
+        for mut i in 0..3i64.pow((len - 1) as u32) {
             let mut sum = right[0];
-            let mut current = i;
 
             for j in 0..(len - 1) {
-                let op = current % 3;
-                current /= 3;
+                let op = i % 3;
+                i /= 3;
 
                 match op {
                     0 => sum += right[j + 1],
