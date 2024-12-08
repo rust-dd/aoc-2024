@@ -32,9 +32,13 @@ pub fn solution() {
 
         // Test every combination of add/mul between the right side
         // All combinations are 2^(len - 1)
+        // generate all possible combinations of add/mul in binary form
         for i in 0..(1 << (len - 1)) {
             let mut sum = right[0];
+
             for j in 0..(len - 1) {
+                // bit masking to check if the j-th bit in i is a 1 or 0
+                // if 1, add, else multiply
                 if i & (1 << j) != 0 {
                     sum += right[j + 1];
                 } else {
