@@ -5,6 +5,7 @@ mod day04;
 mod day05;
 mod day06;
 mod day07;
+mod day09;
 
 fn main() {
     // day01::solution();
@@ -13,5 +14,6 @@ fn main() {
     // day04::solution();
     // day05::solution();
     // day06::solution();
-    day07::solution();
+    // day07::solution();
+    day09::solution();
 }
