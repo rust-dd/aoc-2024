@@ -24,6 +24,6 @@ fn main() {
     // day09::solution();
     // day10::solution();
     // day11::solution();
-    // day12::solution();
-    day13::solution();
+    day12::solution();
+    //day13::solution();
 }
