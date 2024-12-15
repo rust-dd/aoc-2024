@@ -1,8 +1,9 @@
 use regex::Regex;
+use std::array;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct Robot {
     x: i32,
     y: i32,
@@ -41,17 +42,18 @@ fn read_input(path: &str) -> std::io::Result<Vec<Robot>> {
 }
 
 pub fn solution() {
-    let mut robots = read_input("./inputs/day14.txt").unwrap();
+    let robots = read_input("./inputs/day14.txt").unwrap();
 
     const WIDE: usize = 101;
     const TALL: usize = 103;
+
+    // A
     const SECONDS: i32 = 100;
     let middle_x = (WIDE as i32) / 2;
     let middle_y = (TALL as i32) / 2;
-
+    let mut robots_a = robots.clone();
     let mut quadrant_counts = [0; 4];
-
-    for robot in &mut robots {
+    for robot in &mut robots_a {
         robot.x = (robot.x + SECONDS * robot.velocity_x) % (WIDE as i32);
         robot.y = (robot.y + SECONDS * robot.velocity_y) % (TALL as i32);
 
@@ -76,6 +78,45 @@ pub fn solution() {
     }
 
     let result = quadrant_counts[0] * quadrant_counts[1] * quadrant_counts[2] * quadrant_counts[3];
-    println!("Result: {}", result);
+    println!("Result A: {}", result);
+
+    // B
+    for second in 0.. {
+        let mut robots_b = robots.clone();
+        let mut tiles: [[String; WIDE]; TALL] =
+            array::from_fn(|_| array::from_fn(|_| String::from(".")));
+        tiles
+            .iter_mut()
+            .for_each(|row| row.iter_mut().for_each(|tile| *tile = String::from(".")));
+
+        for robot in &mut robots_b {
+            robot.x = (robot.x + second * robot.velocity_x) % (WIDE as i32);
+            robot.y = (robot.y + second * robot.velocity_y) % (TALL as i32);
+
+            if robot.x < 0 {
+                robot.x += WIDE as i32;
+            }
+            if robot.y < 0 {
+                robot.y += TALL as i32;
+            }
+
+            tiles[robot.y as usize][robot.x as usize] = "#".to_string();
+        }
+
+        let mut count = 0;
+        let middle_col = WIDE / 2;
+        // Assumption is that there are TALL / 5 robots sequantially in the middle
+        for row in &tiles {
+            if row[middle_col] == "#" {
+                count += 1;
+                if count >= TALL / 5 {
+                    println!("Result B: {}", second);
+                    return;
+                }
+            } else {
+                count = 0;
+            }
+        }
+    }
 
 }
