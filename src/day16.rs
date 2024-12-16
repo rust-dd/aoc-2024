@@ -88,9 +88,10 @@ pub fn solution() {
         col: start_col,
         dir: 0,
     };
-    let dist_s_map: HashMap<State, (State, u64)> = dijkstra_all(&start_state, forward_successors);
 
+    let dist_s_map = dijkstra_all(&start_state, forward_successors);
     let mut best_score = u64::MAX;
+
     for d in 0..4 {
         let e_state = State {
             row: end_row,
@@ -101,6 +102,7 @@ pub fn solution() {
             best_score = best_score.min(*cost);
         }
     }
+
     println!("Result: {}", best_score);
 
     // B.
