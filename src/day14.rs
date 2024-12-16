@@ -65,7 +65,7 @@ pub fn solution() {
         }
         if robot.x != middle_x && robot.y != middle_y {
             if robot.x > middle_x && robot.y < middle_y {
-                quadrant_counts[0] += 1; 
+                quadrant_counts[0] += 1;
             } else if robot.x < middle_x && robot.y < middle_y {
                 quadrant_counts[1] += 1;
             } else if robot.x < middle_x && robot.y > middle_y {
@@ -74,7 +74,6 @@ pub fn solution() {
                 quadrant_counts[3] += 1;
             }
         }
-
     }
 
     let result = quadrant_counts[0] * quadrant_counts[1] * quadrant_counts[2] * quadrant_counts[3];
@@ -109,7 +108,7 @@ pub fn solution() {
         for row in &tiles {
             if row[middle_col] == "#" {
                 count += 1;
-                if count >= TALL / 5 {
+                if count >= 8 {
                     println!("Result B: {}", second);
                     return;
                 }
@@ -117,6 +116,7 @@ pub fn solution() {
                 count = 0;
             }
         }
-    }
 
+        println!("Second: {}", second);
+    }
 }
