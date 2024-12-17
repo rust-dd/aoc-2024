@@ -1,14 +1,11 @@
-use std::{fs, path::Path, thread, time};
-
+use std::fs;
 use regex::Regex;
 
 pub fn solution() {
-    let input = fs::read_to_string(Path::new("./inputs/day17.txt")).unwrap();
-    let re = Regex::new(
-        r"Register A:\s*(\d+)\s*Register B:\s*(\d+)\s*Register C:\s*(\d+)\s*Program:\s*([\d,]+)",
-    )
-    .unwrap();
-    let caps = re.captures(&input).unwrap();
+    let input = fs::read_to_string("./inputs/day17.txt").expect("Failed to read file");
+    let re = Regex::new(r"Register A:\s*(\d+)\s*Register B:\s*(\d+)\s*Register C:\s*(\d+)\s*Program:\s*([\d,]+)").unwrap();
+    let caps = re.captures(&input).expect("Failed to parse input");
+
     let mut a: u32 = caps[1].parse().unwrap();
     let mut b: u32 = caps[2].parse().unwrap();
     let mut c: u32 = caps[3].parse().unwrap();
@@ -18,87 +15,39 @@ pub fn solution() {
         .collect();
 
     let mut result = Vec::new();
-    let mut pointer: usize = 0;
+    let mut pointer = 0;
 
     while pointer < programs.len() {
         let opcode = programs[pointer];
         let operand = programs[pointer + 1];
-        let combo = combo(operand, a, b, c);
-        println!(
-            "opcode: {:?}, operand: {:?}, combo: {:?}",
-            opcode, operand, combo
-        );
+        let combo = get_combo(operand, a, b, c);
 
         match opcode {
-            // adv
-            0 => {
-                a = a / (u32::pow(2, combo));
-                println!("a: {}", a);
-            }
-
-            // bxl
-            1 => {
-                b = b ^ operand;
-                println!("b: {}", b);
-            }
-
-            // bst
-            2 => {
-                b = combo % 8;
-                println!("b: {}", b);
-            }
-
-            // jnz
-            3 => {
-                if a != 0 {
-                    pointer = (operand ) as usize;
-                    continue;
-                }
-            }
-
-            // bxc
-            4 => {
-                b = b ^ c;
-                println!("b {}", b);
-            }
-
-            // out
-            5 => {
-                let output = combo % 8;
-                println!("Output: {}", output);
-                result.push(output);
-            }
-
-            // bdv
-            6 => {
-                b = a / (u32::pow(2, combo));
-                println!("b: {}", b);
-            }
-
-            // cdv
-            7 => {
-                c = a / (u32::pow(2, combo));
-                println!("c: {}", c);
-            }
-
-            _ => {
-                println!("Unknown opcode: {}", opcode);
-            }
+            0 => a /= 1 << combo,
+            1 => b ^= operand,
+            2 => b = combo % 8,
+            3 => if a != 0 {
+                pointer = operand as usize; 
+                continue; 
+            },
+            4 => b ^= c,
+            5 => result.push(combo % 8),
+            6 => b = a / (1 << combo),
+            7 => c = a / (1 << combo),
+            _ => println!("Unknown opcode: {}", opcode),
         }
         pointer += 2;
     }
 
-    // Join the result for output
-    let joined = result
-        .iter()
-        .map(|n| n.to_string())
-        .collect::<Vec<String>>()
+    // Join result for output
+    let output = result.iter()
+        .map(u32::to_string)
+        .collect::<Vec<_>>()
         .join(",");
-
-    println!("Result: {}", joined);
+    println!("Result: {}", output);
 }
 
-fn combo(operand: u32, a: u32, b: u32, c: u32) -> u32 {
+fn get_combo(operand: u32, a: u32, b: u32, c: u32) -> u32 {
     match operand {
         4 => a,
         5 => b,
