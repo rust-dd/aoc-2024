@@ -65,7 +65,7 @@ pub fn solution() {
         }
         if robot.x != middle_x && robot.y != middle_y {
             if robot.x > middle_x && robot.y < middle_y {
-                quadrant_counts[0] += 1;
+                quadrant_counts[0] += 1; 
             } else if robot.x < middle_x && robot.y < middle_y {
                 quadrant_counts[1] += 1;
             } else if robot.x < middle_x && robot.y > middle_y {
@@ -74,6 +74,7 @@ pub fn solution() {
                 quadrant_counts[3] += 1;
             }
         }
+
     }
 
     let result = quadrant_counts[0] * quadrant_counts[1] * quadrant_counts[2] * quadrant_counts[3];
@@ -102,21 +103,35 @@ pub fn solution() {
             tiles[robot.y as usize][robot.x as usize] = "#".to_string();
         }
 
-        let mut count = 0;
-        let middle_col = WIDE / 2;
-        // Assumption is that there are TALL / 5 robots sequantially in the middle
-        for row in &tiles {
-            if row[middle_col] == "#" {
-                count += 1;
-                if count >= 8 {
-                    println!("Result B: {}", second);
-                    return;
+        let mut expected_longest = 1; 
+        let mut increase_count = 0; 
+    
+        for (_, row) in tiles.iter().enumerate() {
+            let mut current_longest = 0;
+            let mut count = 0; 
+    
+            for tile in row {
+                if tile == "#" {
+                    count += 1;
+                    if count > current_longest {
+                        current_longest = count;
+                    }
+                } else {
+                    count = 0; 
                 }
-            } else {
-                count = 0;
             }
+    
+            if current_longest == expected_longest {
+                increase_count += 1; 
+                expected_longest += 2; // should be symmetric
+            }
+            
         }
-
-        println!("Second: {}", second);
+        if increase_count > 5 {
+            println!("Result B: {}", second);
+            break;
+        }
+        
     }
+
 }
