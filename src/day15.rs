@@ -251,6 +251,8 @@ pub fn solution() {
     let a = Warehouse.solve(&data, 1);
     println!("Part A: {}", a);
 
+    // Part 2 is inspired by:
+    // https://github.com/nitekat1124/advent-of-code-2024/blob/main/solutions/day15.py
     let b = Warehouse.solve(&data, 2);
     println!("Part B: {}", b);
 }

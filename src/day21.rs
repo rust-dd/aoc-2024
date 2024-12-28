@@ -1,178 +1,219 @@
-use pathfinding::prelude::bfs;
+use std::collections::HashMap;
 
-static NUMPAD: [[Option<char>; 3]; 4] = [
-    [Some('7'), Some('8'), Some('9')],
-    [Some('4'), Some('5'), Some('6')],
-    [Some('1'), Some('2'), Some('3')],
-    [None, Some('0'), Some('A')],
-];
-
-static DIRPAD: [[Option<char>; 3]; 2] = [
-    [None, Some('^'), Some('A')],
-    [Some('<'), Some('v'), Some('>')],
-];
-
-#[derive(Clone, Copy, Debug)]
-enum Dir {
-    Up,
-    Down,
-    Left,
-    Right,
+struct Solution {
+    moves1: HashMap<(char, char), Vec<String>>,
+    moves2: HashMap<(char, char), Vec<String>>,
 }
 
-impl Dir {
-    fn all() -> &'static [Dir] {
-        &[Dir::Up, Dir::Down, Dir::Left, Dir::Right]
+impl Solution {
+    fn new(keypad1: &[&str], keypad2: &[&str]) -> Self {
+        let moves1 = Self::parse_moves(keypad1);
+        let moves2 = Self::parse_moves(keypad2);
+        Solution { moves1, moves2 }
     }
 
-    fn delta(&self) -> (i32, i32) {
-        match *self {
-            Dir::Up => (-1, 0),
-            Dir::Down => (1, 0),
-            Dir::Left => (0, -1),
-            Dir::Right => (0, 1),
-        }
-    }
-}
-
-/// The state consists of: (pos3, pos2, pos1, typed)
-/// - pos3: your hand on the 2×3 directional keypad
-/// - pos2: the second robot's hand on the 2×3 directional keypad
-/// - pos1: the first robot's hand on the 4×3 numeric keypad
-/// - typed: how many characters of the code have been typed so far
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
-struct State {
-    pos3: (i32, i32),
-    pos2: (i32, i32),
-    pos1: (i32, i32),
-    typed: usize,
-}
-
-/// Initial state: all robots (and you) start on the 'A' button
-fn start_state() -> State {
-    State {
-        pos3: (0, 2),
-        pos2: (0, 2),
-        pos1: (3, 2),
-        typed: 0,
-    }
-}
-
-fn dirpad_button(r: i32, c: i32) -> Option<char> {
-    if r < 0 || r >= 2 || c < 0 || c >= 3 {
-        None
-    } else {
-        DIRPAD[r as usize][c as usize]
-    }
-}
-
-fn numpad_button(r: i32, c: i32) -> Option<char> {
-    if r < 0 || r >= 4 || c < 0 || c >= 3 {
-        None
-    } else {
-        NUMPAD[r as usize][c as usize]
-    }
-}
-
-fn next_states(state: &State, code: &str) -> Vec<State> {
-    let mut results = Vec::new();
-
-    for d in Dir::all() {
-        let (dr, dc) = d.delta();
-        let nr = state.pos3.0 + dr;
-        let nc = state.pos3.1 + dc;
-        if let Some(_ch) = dirpad_button(nr, nc) {
-            let mut st2 = state.clone();
-            st2.pos3 = (nr, nc);
-            results.push(st2);
-        }
-    }
-
-    if let Some(ch3) = dirpad_button(state.pos3.0, state.pos3.1) {
-        if ch3 == 'A' {
-            if let Some(ch2) = dirpad_button(state.pos2.0, state.pos2.1) {
-                if "^v<>".contains(ch2) {
-                    let dir = match ch2 {
-                        '^' => Dir::Up,
-                        'v' => Dir::Down,
-                        '<' => Dir::Left,
-                        '>' => Dir::Right,
-                        _ => unreachable!(),
-                    };
-                    let (dr, dc) = dir.delta();
-                    let r1 = state.pos1.0 + dr;
-                    let c1 = state.pos1.1 + dc;
-                    if let Some(_nbtn) = numpad_button(r1, c1) {
-                        let mut st2 = state.clone();
-                        st2.pos1 = (r1, c1);
-                        results.push(st2);
-                    }
-                } else if ch2 == 'A' {
-                    if let Some(numch) = numpad_button(state.pos1.0, state.pos1.1) {
-                        let mut st2 = state.clone();
-                        if st2.typed < code.len() && code.as_bytes()[st2.typed] == numch as u8 {
-                            st2.typed += 1;
-                        }
-                        results.push(st2);
-                    }
+    fn parse_moves(keypad: &[&str]) -> HashMap<(char, char), Vec<String>> {
+        fn get_key_pos(keypad: &[&str]) -> HashMap<char, (usize, usize)> {
+            let mut pos = HashMap::new();
+            for (r, row) in keypad.iter().enumerate() {
+                for (c, key) in row.chars().enumerate() {
+                    pos.insert(key, (r, c));
                 }
             }
-        } else if "^v<>".contains(ch3) {
-            let dir = match ch3 {
-                '^' => Dir::Up,
-                'v' => Dir::Down,
-                '<' => Dir::Left,
-                '>' => Dir::Right,
-                _ => unreachable!(),
-            };
-            let (dr, dc) = dir.delta();
-            let r2 = state.pos2.0 + dr;
-            let c2 = state.pos2.1 + dc;
-            if let Some(_ch2) = dirpad_button(r2, c2) {
-                let mut st2 = state.clone();
-                st2.pos2 = (r2, c2);
-                results.push(st2);
+            pos
+        }
+
+        let pos = get_key_pos(keypad);
+        let mut moves: HashMap<(char, char), Vec<String>> = HashMap::new();
+        let mut keys: Vec<char> = pos.keys().cloned().collect();
+        keys.sort();
+
+        let hash_pos = pos.get(&'#').expect("Keypad must contain '#'");
+
+        for &key1 in &keys {
+            if key1 == '#' {
+                continue;
+            }
+            for &key2 in &keys {
+                if key2 == '#' || key1 == key2 {
+                    continue;
+                }
+                let p1 = pos[&key1];
+                let p2 = pos[&key2];
+                let mut sequences = Vec::new();
+
+                if p1.0 == p2.0 {
+                    let dir = if p2.1 > p1.1 { '>' } else { '<' };
+                    let distance = (p2.1 as isize - p1.1 as isize).abs();
+                    let move_seq = format!("{}A", dir.to_string().repeat(distance as usize));
+                    sequences.push(move_seq);
+                } else if p1.1 == p2.1 {
+                    let dir = if p2.0 > p1.0 { 'v' } else { '^' };
+                    let distance = (p2.0 as isize - p1.0 as isize).abs();
+                    let move_seq = format!("{}A", dir.to_string().repeat(distance as usize));
+                    sequences.push(move_seq);
+                } else {
+                    if p1.0 != hash_pos.0 || p2.1 != hash_pos.1 {
+                        let dir1 = if p2.1 > p1.1 { '>' } else { '<' };
+                        let distance1 = (p2.1 as isize - p1.1 as isize).abs();
+                        let dir2 = if p2.0 > p1.0 { 'v' } else { '^' };
+                        let distance2 = (p2.0 as isize - p1.0 as isize).abs();
+                        let move_seq = format!(
+                            "{}{}A",
+                            dir1.to_string().repeat(distance1 as usize),
+                            dir2.to_string().repeat(distance2 as usize)
+                        );
+                        sequences.push(move_seq);
+                    }
+
+                    // First vertical then horizontal
+                    if p1.1 != hash_pos.1 || p2.0 != hash_pos.0 {
+                        let dir1 = if p2.0 > p1.0 { 'v' } else { '^' };
+                        let distance1 = (p2.0 as isize - p1.0 as isize).abs();
+                        let dir2 = if p2.1 > p1.1 { '>' } else { '<' };
+                        let distance2 = (p2.1 as isize - p1.1 as isize).abs();
+                        let move_seq = format!(
+                            "{}{}A",
+                            dir1.to_string().repeat(distance1 as usize),
+                            dir2.to_string().repeat(distance2 as usize)
+                        );
+                        sequences.push(move_seq);
+                    }
+                }
+
+                if !sequences.is_empty() {
+                    moves.insert((key1, key2), sequences);
+                }
             }
         }
+
+        moves
     }
 
-    results
+    fn build_combinations(&self, arrays: &[Vec<String>]) -> Vec<Vec<String>> {
+        let mut results: Vec<Vec<String>> = vec![Vec::new()];
+        for array in arrays {
+            let mut temp = Vec::new();
+            for combination in &results {
+                for item in array {
+                    let mut new_combination = combination.clone();
+                    new_combination.push(item.clone());
+                    temp.push(new_combination);
+                }
+            }
+            results = temp;
+        }
+        results
+    }
+
+    fn translate(
+        &self,
+        code: &str,
+        depth: usize,
+        cache: &mut HashMap<(String, usize), usize>,
+    ) -> usize {
+        if let Some(&cached) = cache.get(&(code.to_string(), depth)) {
+            return cached;
+        }
+
+        let moves = if code.chars().next().unwrap().is_numeric() {
+            self.translate_numpad(code)
+        } else {
+            self.translate_keypad(code)
+        };
+
+        let result = if depth == 0 {
+            moves
+                .iter()
+                .map(|move_seq| move_seq.iter().map(|s| s.len()).sum::<usize>())
+                .min()
+                .unwrap_or(0)
+        } else {
+            moves
+                .iter()
+                .map(|move_seq| {
+                    move_seq
+                        .iter()
+                        .map(|s| self.translate(s, depth - 1, cache))
+                        .sum::<usize>()
+                })
+                .min()
+                .unwrap_or(0)
+        };
+
+        cache.insert((code.to_string(), depth), result);
+        result
+    }
+
+    fn translate_numpad(&self, code: &str) -> Vec<Vec<String>> {
+        let mut code_chars: Vec<char> = code.chars().collect();
+        code_chars.insert(0, 'A');
+        let mut moves_list = Vec::new();
+
+        for pair in code_chars.windows(2) {
+            if let [a, b] = pair {
+                if let Some(moves) = self.moves1.get(&(*a, *b)) {
+                    moves_list.push(moves.clone());
+                } else {
+                    moves_list.push(vec!["A".to_string()]);
+                }
+            }
+        }
+
+        self.build_combinations(&moves_list)
+    }
+
+    fn translate_keypad(&self, code: &str) -> Vec<Vec<String>> {
+        let mut code_chars: Vec<char> = code.chars().collect();
+        code_chars.insert(0, 'A');
+        let mut moves_list = Vec::new();
+
+        for pair in code_chars.windows(2) {
+            if let [a, b] = pair {
+                if *a != *b {
+                    if let Some(moves) = self.moves2.get(&(*a, *b)) {
+                        moves_list.push(moves.clone());
+                    } else {
+                        // If no move exists, use a default move
+                        moves_list.push(vec!["A".to_string()]);
+                    }
+                } else {
+                    moves_list.push(vec!["A".to_string()]);
+                }
+            }
+        }
+
+        self.build_combinations(&moves_list)
+    }
+
+    fn solve(&self, data: &[&str], depth: usize) -> usize {
+        let mut complexities = 0;
+        let mut cache = HashMap::new();
+
+        for code in data {
+            let min_len = self.translate(code, depth, &mut cache);
+            if let Some(num_str) = code.strip_suffix(&code.chars().last().unwrap().to_string()) {
+                if let Ok(num) = num_str.parse::<usize>() {
+                    complexities += min_len * num;
+                }
+            }
+        }
+
+        complexities
+    }
 }
 
 pub fn solution() {
-    let codes = ["671A", "279A", "083A", "974A", "386A"];
-    let mut total_complexity = 0_u64;
+    let keypad1 = ["789", "456", "123", "#0A"];
+    let keypad2 = ["#^A", "<v>"];
+    let solution = Solution::new(&keypad1, &keypad2);
+    let data = ["671A", "279A", "083A", "974A", "386A"];
 
-    let bfs_shortest_len = |code: &str| -> usize {
-        let goal_check = |s: &State| s.typed == code.len();
-        let neighbors_fn = |s: &State| next_states(s, code);
-        if let Some(path) = bfs(&start_state(), neighbors_fn, goal_check) {
-            path.len() - 1
-        } else {
-            panic!("No solution found for code: {code}");
-        }
-    };
+    let part1 = solution.solve(&data, 2);
+    println!("Part 1: {}", part1);
 
-    let numeric_part = |code: &str| -> u32 {
-        let trimmed = code.trim_end_matches('A');
-        trimmed.parse::<u32>().unwrap()
-    };
-
-    // A.
-    for &code in &codes {
-        let length = bfs_shortest_len(code);
-        let num = numeric_part(code);
-        let complexity = (length as u64) * (num as u64);
-
-        println!(
-            "Code: {}, bfs_len: {}, numeric: {}, complexity: {}",
-            code, length, num, complexity
-        );
-
-        total_complexity += complexity;
-    }
-
-    println!("Total complexity: {}", total_complexity);
-
-    // B.
+    // Part 2 is insipired by:
+    // https://github.com/nitekat1124/advent-of-code-2024/blob/main/solutions/day21.py
+    let part2 = solution.solve(&data, 25);
+    println!("Part 2: {}", part2);
 }
