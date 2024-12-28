@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fs};
 
 struct Solution {
     moves1: HashMap<(char, char), Vec<String>>,
@@ -207,7 +207,12 @@ pub fn solution() {
     let keypad1 = ["789", "456", "123", "#0A"];
     let keypad2 = ["#^A", "<v>"];
     let solution = Solution::new(&keypad1, &keypad2);
-    let data = ["671A", "279A", "083A", "974A", "386A"];
+    let input = fs::read_to_string("./inputs/day21.txt").unwrap();
+    let data: Vec<&str> = input
+        .lines()
+        .map(str::trim)
+        .filter(|l| !l.is_empty())
+        .collect();
 
     let part1 = solution.solve(&data, 2);
     println!("Part 1: {}", part1);

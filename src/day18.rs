@@ -73,7 +73,7 @@ pub fn solution() {
 
         let (path_found, _) = bfs(&grid);
         if !path_found {
-            println!("Result B: {},{}", x, y);
+            println!("Result B: {},{}", y, x);
             break;
         }
     }
