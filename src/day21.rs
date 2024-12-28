@@ -9,7 +9,7 @@ impl Solution {
     fn new(keypad1: &[&str], keypad2: &[&str]) -> Self {
         let moves1 = Self::parse_moves(keypad1);
         let moves2 = Self::parse_moves(keypad2);
-        Solution { moves1, moves2 }
+        Self { moves1, moves2 }
     }
 
     fn parse_moves(keypad: &[&str]) -> HashMap<(char, char), Vec<String>> {
